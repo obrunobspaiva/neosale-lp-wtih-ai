@@ -218,11 +218,12 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
 
     // Scroll to bottom
     function scrollToBottom() {
-        // Scroll the last message into view
-        const lastMessage = chatMessages.lastElementChild;
-        if (lastMessage) {
-            lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
+        setTimeout(() => {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 500);
     }
 
     // Show input based on type
