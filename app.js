@@ -440,8 +440,8 @@ Para começar, me passa seu WhatsApp? 😊`;
             }
         }
 
-        // Update lead with new field data via PUT (for fields after telefone)
-        if (state.leadId && currentStep.field !== 'nome' && currentStep.field !== 'telefone') {
+        // Update lead with new field data via PUT (for fields after telefone, including nome)
+        if (state.leadId && currentStep.field !== 'telefone') {
             await updateLeadField(currentStep.field, value);
         }
 
@@ -464,6 +464,7 @@ Para começar, me passa seu WhatsApp? 😊`;
 
         // Map form fields to API fields
         const fieldMapping = {
+            nome: 'nome',
             email: 'email',
             empresa: 'empresa',
             segmento: 'segmento',
