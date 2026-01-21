@@ -1601,6 +1601,22 @@ O link da reunião será enviado por email e WhatsApp.`);
         }
     });
 
+    // Scroll to bottom when input is focused (mobile keyboard)
+    userInput.addEventListener('focus', function () {
+        setTimeout(() => {
+            scrollToBottom();
+        }, 300);
+    });
+
+    // Handle visual viewport resize (mobile keyboard)
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', function () {
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        });
+    }
+
     // Initialize on DOM ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
