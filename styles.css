@@ -47,7 +47,7 @@ header {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: 1000;
 }
 
 .header-content {
@@ -237,13 +237,11 @@ main {
     padding: 16px 20px;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     z-index: 1000;
-}
-
-/* Fix for mobile keyboard */
-@supports (bottom: env(keyboard-inset-height)) {
-    .chat-input-area {
-        bottom: env(keyboard-inset-height, 0px);
-    }
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    will-change: bottom;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 .input-wrapper {

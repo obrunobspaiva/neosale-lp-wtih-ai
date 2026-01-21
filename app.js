@@ -1609,23 +1609,26 @@ O link da reunião será enviado por email e WhatsApp.`);
     });
 
     // Handle visual viewport resize (mobile keyboard)
-    if (window.visualViewport) {
-        const inputArea = document.getElementById('chat-input-area');
-        
-        window.visualViewport.addEventListener('resize', function () {
-            // Adjust input area position based on keyboard
-            const keyboardHeight = window.innerHeight - window.visualViewport.height;
-            inputArea.style.bottom = keyboardHeight + 'px';
-            
-            setTimeout(() => {
-                scrollToBottom();
-            }, 100);
-        });
-
-        window.visualViewport.addEventListener('scroll', function () {
-            inputArea.style.bottom = (window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop) + 'px';
-        });
+    const inputArea = document.getElementById('chat-input-area');
+    
+    function adjustForKeyboard() {
+        if (window.visualViewport) {
+            const viewport = window.visualViewport;
+            const bottomOffset = window.innerHeight - viewport.height - viewport.offsetTop;
+            inputArea.style.bottom = Math.max(0, bottomOffset) + 'px';
+            scrollToBottom();
+        }
     }
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', adjustForKeyboard);
+        window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+    }
+
+    // Fallback for iOS Safari
+    window.addEventListener('resize', function() {
+        setTimeout(adjustForKeyboard, 100);
+    });
 
     // Initialize on DOM ready
     if (document.readyState === 'loading') {
