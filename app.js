@@ -1610,10 +1610,20 @@ O link da reunião será enviado por email e WhatsApp.`);
 
     // Handle visual viewport resize (mobile keyboard)
     if (window.visualViewport) {
+        const inputArea = document.getElementById('chat-input-area');
+        
         window.visualViewport.addEventListener('resize', function () {
+            // Adjust input area position based on keyboard
+            const keyboardHeight = window.innerHeight - window.visualViewport.height;
+            inputArea.style.bottom = keyboardHeight + 'px';
+            
             setTimeout(() => {
                 scrollToBottom();
             }, 100);
+        });
+
+        window.visualViewport.addEventListener('scroll', function () {
+            inputArea.style.bottom = (window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop) + 'px';
         });
     }
 
