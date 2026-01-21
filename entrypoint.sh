@@ -1,4 +1,3 @@
-@@ -1,10 +0,0 @@
 #!/bin/sh
 cat > /usr/share/nginx/html/config.js << EOF
 window.ENV = {
