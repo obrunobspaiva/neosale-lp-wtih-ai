@@ -148,26 +148,75 @@ CONTEXTO DA NEOSALE:
 
         try {
             // Generate initial message with AI
-            const prompt = `Cumprimente o visitante com "${greeting}" e se apresente como Maya da NeoSale AI. Explique brevemente que vai criar um diagnóstico personalizado para automatizar vendas no WhatsApp. Termine pedindo o telefone/WhatsApp do visitante para facilitar a comunicação.`;
+            const prompt = `Cumprimente o visitante com "${greeting}" e se apresente como Maya da NeoSale AI. Explique brevemente que vai criar um diagnóstico personalizado para automatizar vendas no WhatsApp. Termine pedindo o WhatsApp do visitante para facilitar a comunicação. Não mencione telefone, apenas WhatsApp.`;
             const message = await callOpenAI(prompt);
-            addBotMessage(message);
+            await addBotMessage(message);
         } catch (error) {
             // Fallback message
             const message = `${greeting}! Sou a <strong>Maya</strong>, assistente virtual da <strong>NeoSale AI</strong>. Vou criar um diagnóstico personalizado para sua empresa - focado em <strong>automatizar vendas</strong>, <strong>qualificar leads</strong> e <strong>multiplicar seus resultados</strong> no WhatsApp.
 
-Para começar, me passa seu telefone/WhatsApp? 😊`;
-            addBotMessage(message);
+Para começar, me passa seu WhatsApp? 😊`;
+            await addBotMessage(message);
         }
 
-        setTimeout(() => {
-            showInput('phone', '(11) 99999-9999');
-            userInput.focus();
-        }, 1200);
+        // Show input after messages are done
+        showInput('phone', '(11) 99999-9999');
+        scrollToBottom();
+        userInput.focus();
     }
 
-    // Add bot message
-    function addBotMessage(text, showTyping = true) {
-        if (showTyping) {
+    // Split long text into smaller messages
+    function splitTextIntoMessages(text) {
+        // Split by sentences or line breaks
+        const maxLength = 150;
+        const parts = [];
+        
+        // First split by double line breaks (paragraphs)
+        const paragraphs = text.split(/\n\n+/);
+        
+        for (const paragraph of paragraphs) {
+            if (paragraph.length <= maxLength) {
+                parts.push(paragraph.trim());
+            } else {
+                // Split by sentences
+                const sentences = paragraph.split(/(?<=[.!?])\s+/);
+                let currentPart = '';
+                
+                for (const sentence of sentences) {
+                    if ((currentPart + ' ' + sentence).length <= maxLength) {
+                        currentPart = currentPart ? currentPart + ' ' + sentence : sentence;
+                    } else {
+                        if (currentPart) parts.push(currentPart.trim());
+                        currentPart = sentence;
+                    }
+                }
+                if (currentPart) parts.push(currentPart.trim());
+            }
+        }
+        
+        return parts.filter(p => p.length > 0);
+    }
+
+    // Add bot message with typing effect
+    async function addBotMessage(text, showTyping = true) {
+        // Hide input while bot is typing
+        showInput('none');
+        
+        const messages = splitTextIntoMessages(text);
+        
+        for (let i = 0; i < messages.length; i++) {
+            await showTypingAndMessage(messages[i]);
+            
+            // Small delay between messages
+            if (i < messages.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+        }
+    }
+
+    // Show typing indicator then message
+    function showTypingAndMessage(text) {
+        return new Promise(resolve => {
             const typingDiv = document.createElement('div');
             typingDiv.className = 'message message-bot typing-message';
             typingDiv.innerHTML = `
@@ -183,13 +232,14 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
             chatMessages.appendChild(typingDiv);
             scrollToBottom();
 
+            const typingTime = Math.min(800 + text.length * 10, 2000);
+            
             setTimeout(() => {
                 typingDiv.remove();
                 appendBotMessage(text);
-            }, 800 + Math.random() * 500);
-        } else {
-            appendBotMessage(text);
-        }
+                resolve();
+            }, typingTime);
+        });
     }
 
     function appendBotMessage(text) {
@@ -219,18 +269,27 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
     // Scroll to bottom
     function scrollToBottom() {
         setTimeout(() => {
-            const main = document.querySelector('main');
-            if (main) {
-                main.scrollTop = main.scrollHeight;
-            }
-        }, 500);
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
     }
 
     // Show input based on type
     function showInput(type, placeholder = '', options = []) {
+        const chatInputArea = document.getElementById('chat-input-area');
         inputWrapper.style.display = 'none';
         optionsWrapper.style.display = 'none';
         selectWrapper.style.display = 'none';
+
+        if (type === 'none') {
+            chatInputArea.style.display = 'none';
+            return;
+        }
+
+        // Show the input area container
+        chatInputArea.style.display = 'block';
 
         switch (type) {
             case 'text':
@@ -262,8 +321,6 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
             case 'confirmation':
                 showConfirmation();
                 break;
-            case 'none':
-                break;
         }
     }
 
@@ -284,7 +341,7 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
     }
 
     // Handle option click
-    function handleOptionClick(value) {
+    async function handleOptionClick(value) {
         // Check for existing lead confirmation flow
         if (state.awaitingConfirmation) {
             addUserMessage(value);
@@ -310,13 +367,12 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
 
             if (value === 'Sim, corrigir outro') {
                 state.updatingExistingLead = true;
-                addBotMessage('O que você gostaria de corrigir?');
-                setTimeout(() => {
-                    showInput('options', '', ['Nome', 'Email', 'Empresa', 'Cargo', 'Faturamento', 'Colaboradores', 'Tudo está errado']);
-                }, 1200);
+                await addBotMessage('O que você gostaria de corrigir?');
+                showInput('options', '', ['Nome', 'Email', 'Empresa', 'Cargo', 'Faturamento', 'Colaboradores', 'Tudo está errado']);
+                scrollToBottom();
             } else {
                 state.updatingExistingLead = false;
-                addBotMessage('Ótimo! Vamos continuar.');
+                await addBotMessage('Ótimo! Vamos continuar.');
                 skipToNextEmptyField();
             }
             return;
@@ -338,7 +394,7 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
         const currentStep = STEPS[state.step];
 
         // Validate input
-        if (!validateInput(currentStep.field, value)) {
+        if (!await validateInput(currentStep.field, value)) {
             return;
         }
 
@@ -439,7 +495,7 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
     }
 
     // Show confirmation for existing lead
-    function showExistingLeadConfirmation() {
+    async function showExistingLeadConfirmation() {
         const lead = state.leadData;
         const firstName = lead.nome ? lead.nome.split(' ')[0] : 'você';
 
@@ -485,12 +541,11 @@ Para começar, me passa seu telefone/WhatsApp? 😊`;
 
 Esses dados estão corretos?`;
 
-        addBotMessage(message);
+        await addBotMessage(message);
 
-        setTimeout(() => {
-            showInput('options', '', ['Sim, estão corretos!', 'Preciso atualizar alguns dados']);
-            state.awaitingConfirmation = true;
-        }, 1200);
+        showInput('options', '', ['Sim, estão corretos!', 'Preciso atualizar alguns dados']);
+        state.awaitingConfirmation = true;
+        scrollToBottom();
     }
 
     // Handle existing lead confirmation response
@@ -499,7 +554,7 @@ Esses dados estão corretos?`;
 
         if (response === 'Sim, estão corretos!') {
             // Data is correct, skip to fields not filled
-            addBotMessage('Perfeito! Vamos continuar de onde paramos.');
+            await addBotMessage('Perfeito! Vamos continuar de onde paramos.');
 
             // Find next step that needs data
             skipToNextEmptyField();
@@ -507,11 +562,10 @@ Esses dados estão corretos?`;
             // User wants to update data
             state.updatingExistingLead = true;
             state.fieldsToUpdate = {};
-            addBotMessage('Sem problemas! Vamos atualizar seus dados. O que você gostaria de corrigir?');
+            await addBotMessage('Sem problemas! Vamos atualizar seus dados. O que você gostaria de corrigir?');
 
-            setTimeout(() => {
-                showInput('options', '', ['Nome', 'Email', 'Empresa', 'Cargo', 'Faturamento', 'Colaboradores', 'Tudo está errado']);
-            }, 1200);
+            showInput('options', '', ['Nome', 'Email', 'Empresa', 'Cargo', 'Faturamento', 'Colaboradores', 'Tudo está errado']);
+            scrollToBottom();
         }
     }
 
@@ -524,10 +578,9 @@ Esses dados estão corretos?`;
             state.existingLead = false;
             state.updatingExistingLead = false;
             state.data.telefone = telefone; // Preserve phone
-            addBotMessage('Ok, vamos recomeçar! Qual é o seu nome completo?');
-            setTimeout(() => {
-                showInput('text', 'Digite seu nome completo...');
-            }, 1200);
+            await addBotMessage('Ok, vamos recomeçar! Qual é o seu nome completo?');
+            showInput('text', 'Digite seu nome completo...');
+            scrollToBottom();
             return;
         }
 
@@ -544,32 +597,29 @@ Esses dados estão corretos?`;
 
         // For faturamento and colaboradores, show select/options instead of text input
         if (field === 'Faturamento') {
-            addBotMessage('Certo! Qual é o faturamento anual correto da empresa?');
-            setTimeout(() => {
-                showInput('select', 'Selecione o faturamento anual', ['Até R$500 mil/ano', 'R$500 mil a R$1 milhão/ano', 'R$1 a R$5 milhões/ano', 'R$5 a R$10 milhões/ano', 'R$10 a R$50 milhões/ano', 'R$50 a R$100 milhões/ano', 'Acima de R$100 milhões/ano', 'Ainda não faturo']);
-            }, 1200);
+            await addBotMessage('Certo! Qual é o faturamento anual correto da empresa?');
+            showInput('select', 'Selecione o faturamento anual', ['Até R$500 mil/ano', 'R$500 mil a R$1 milhão/ano', 'R$1 a R$5 milhões/ano', 'R$5 a R$10 milhões/ano', 'R$10 a R$50 milhões/ano', 'R$50 a R$100 milhões/ano', 'Acima de R$100 milhões/ano', 'Ainda não faturo']);
+            scrollToBottom();
             return;
         }
 
         if (field === 'Colaboradores') {
-            addBotMessage('Certo! Quantos colaboradores a empresa possui?');
-            setTimeout(() => {
-                showInput('options', '', ['1 a 5', '6 a 10', '11 a 20', '20 a 50', '50 a 100', '100 a 300', '300+']);
-            }, 1200);
+            await addBotMessage('Certo! Quantos colaboradores a empresa possui?');
+            showInput('options', '', ['1 a 5', '6 a 10', '11 a 20', '20 a 50', '50 a 100', '100 a 300', '300+']);
+            scrollToBottom();
             return;
         }
 
-        addBotMessage(`Certo! Qual é o seu ${field.toLowerCase()} correto?`);
+        await addBotMessage(`Certo! Qual é o seu ${field.toLowerCase()} correto?`);
 
-        setTimeout(() => {
-            const placeholder = {
-                'Nome': 'Digite seu nome completo...',
-                'Email': 'seu@email.com',
-                'Empresa': 'Nome da sua empresa...',
-                'Cargo': 'Seu cargo...'
-            };
-            showInput(field === 'Email' ? 'email' : 'text', placeholder[field]);
-        }, 1200);
+        const placeholder = {
+            'Nome': 'Digite seu nome completo...',
+            'Email': 'seu@email.com',
+            'Empresa': 'Nome da sua empresa...',
+            'Cargo': 'Seu cargo...'
+        };
+        showInput(field === 'Email' ? 'email' : 'text', placeholder[field]);
+        scrollToBottom();
     }
 
     // Handle field update value
@@ -580,7 +630,9 @@ Esses dados estão corretos?`;
         if (field === 'email') {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value)) {
-                addBotMessage('Por favor, digite um e-mail válido.');
+                await addBotMessage('Por favor, digite um e-mail válido.');
+                showInput('email', 'seu@email.com');
+                scrollToBottom();
                 return;
             }
         }
@@ -601,11 +653,10 @@ Esses dados estão corretos?`;
 
         await updateLead({ [apiField]: apiValue });
 
-        addBotMessage(`Pronto! ${field.charAt(0).toUpperCase() + field.slice(1)} atualizado. Deseja corrigir mais algum dado?`);
+        await addBotMessage(`Pronto! ${field.charAt(0).toUpperCase() + field.slice(1)} atualizado. Deseja corrigir mais algum dado?`);
 
-        setTimeout(() => {
-            showInput('options', '', ['Sim, corrigir outro', 'Não, continuar']);
-        }, 1200);
+        showInput('options', '', ['Sim, corrigir outro', 'Não, continuar']);
+        scrollToBottom();
 
         state.awaitingMoreUpdates = true;
     }
@@ -760,25 +811,31 @@ Esses dados estão corretos?`;
     }
 
     // Validate input
-    function validateInput(field, value) {
+    async function validateInput(field, value) {
         switch (field) {
             case 'nome':
                 if (value.length < 2) {
-                    addBotMessage('Por favor, digite seu nome completo.');
+                    await addBotMessage('Por favor, digite seu nome completo.');
+                    showInput('text', 'Digite seu nome completo...');
+                    scrollToBottom();
                     return false;
                 }
                 return true;
             case 'telefone':
                 const phone = value.replace(/\D/g, '');
                 if (phone.length < 10) {
-                    addBotMessage('Por favor, digite um telefone válido com DDD.');
+                    await addBotMessage('Por favor, digite um telefone válido com DDD.');
+                    showInput('phone', '(11) 99999-9999');
+                    scrollToBottom();
                     return false;
                 }
                 return true;
             case 'email':
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(value)) {
-                    addBotMessage('Por favor, digite um e-mail válido.');
+                    await addBotMessage('Por favor, digite um e-mail válido.');
+                    showInput('email', 'seu@email.com');
+                    scrollToBottom();
                     return false;
                 }
                 return true;
@@ -804,18 +861,15 @@ Esses dados estão corretos?`;
         const currentStep = STEPS[state.step];
         const response = await generateAIResponse(currentStep.field);
 
-        addBotMessage(response);
+        await addBotMessage(response);
 
-        // For calendar, show it after the message with a delay
+        // For calendar, show it after the message
         if (currentStep.type === 'calendar') {
-            setTimeout(() => {
-                showCalendar();
-            }, 1500);
+            showCalendar();
         } else {
-            setTimeout(() => {
-                showInput(currentStep.type, currentStep.placeholder || '', currentStep.options || []);
-            }, 1200);
+            showInput(currentStep.type, currentStep.placeholder || '', currentStep.options || []);
         }
+        scrollToBottom();
     }
 
     // Generate AI response using GPT-4o-mini
@@ -1606,42 +1660,6 @@ O link da reunião será enviado por email e WhatsApp.`);
         setTimeout(() => {
             scrollToBottom();
         }, 300);
-    });
-
-    // Handle visual viewport resize (mobile keyboard)
-    const inputArea = document.getElementById('chat-input-area');
-    const mainElement = document.querySelector('main');
-    
-    function adjustForKeyboard() {
-        if (window.visualViewport) {
-            const viewport = window.visualViewport;
-            // Calculate keyboard height
-            const keyboardHeight = window.innerHeight - viewport.height;
-            
-            // Adjust input area position
-            inputArea.style.bottom = Math.max(0, keyboardHeight) + 'px';
-            
-            // Adjust main padding to account for keyboard
-            mainElement.style.paddingBottom = (80 + keyboardHeight) + 'px';
-            
-            // Scroll to bottom
-            setTimeout(() => {
-                mainElement.scrollTop = mainElement.scrollHeight;
-            }, 50);
-        }
-    }
-
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', adjustForKeyboard);
-        window.visualViewport.addEventListener('scroll', adjustForKeyboard);
-    }
-
-    // Reset when keyboard closes
-    userInput.addEventListener('blur', function() {
-        setTimeout(() => {
-            inputArea.style.bottom = '0px';
-            mainElement.style.paddingBottom = '80px';
-        }, 100);
     });
 
     // Initialize on DOM ready
