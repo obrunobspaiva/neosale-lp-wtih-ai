@@ -278,8 +278,8 @@ Para começar, me passa seu WhatsApp? 😊`;
             
             if (targetElement) {
                 const rect = targetElement.getBoundingClientRect();
-                // Only scroll if element is below the visible area (with 20px margin)
-                if (rect.bottom > window.innerHeight - 20) {
+                // Only scroll if element is below the visible area (with 50px margin)
+                if (rect.bottom > window.innerHeight - 50) {
                     targetElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             }
