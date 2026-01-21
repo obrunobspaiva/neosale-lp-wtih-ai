@@ -207,9 +207,10 @@ Para começar, me passa seu WhatsApp? 😊`;
         for (let i = 0; i < messages.length; i++) {
             await showTypingAndMessage(messages[i]);
             
-            // Small delay between messages
+            // Delay between messages - longer for longer messages
             if (i < messages.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 300));
+                const delayTime = Math.min(500 + messages[i].length * 5, 1500);
+                await new Promise(resolve => setTimeout(resolve, delayTime));
             }
         }
     }
@@ -232,7 +233,8 @@ Para começar, me passa seu WhatsApp? 😊`;
             chatMessages.appendChild(typingDiv);
             scrollToBottom();
 
-            const typingTime = Math.min(800 + text.length * 10, 2000);
+            // Typing time proportional to message length
+            const typingTime = Math.min(1000 + text.length * 15, 3000);
             
             setTimeout(() => {
                 typingDiv.remove();
@@ -1193,6 +1195,9 @@ Temos apenas três vagas para diagnósticos personalizados esta semana - onde va
 
                 // Show time slots
                 showTimeSlots();
+                
+                // Scroll to bottom after selecting date
+                scrollToBottom();
             });
         });
 
@@ -1539,10 +1544,6 @@ O link da reunião será enviado por email e WhatsApp.`);
                         📅 ${dateFormatted} às ${state.data.horario_agendamento}
                     </p>
                 </div>
-                
-                <a href="${calendarLink}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%); color: white; text-decoration: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 0.8125rem; margin-bottom: 12px;">
-                    Adicionar ao Calendário
-                </a>
                 
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">
                     Você receberá o link por <strong style="color: var(--accent);">email</strong> e <strong style="color: #25D366;">WhatsApp</strong>
