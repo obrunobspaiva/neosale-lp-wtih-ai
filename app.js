@@ -268,22 +268,14 @@ Para começar, me passa seu WhatsApp? 😊`;
         scrollToBottom();
     }
 
-    // Scroll to bottom - only scroll if content is below viewport
+    // Scroll to bottom
     function scrollToBottom() {
         setTimeout(() => {
-            const chatInputArea = document.getElementById('chat-input-area');
-            const targetElement = chatInputArea && chatInputArea.style.display !== 'none' 
-                ? chatInputArea 
-                : chatMessages.lastElementChild;
-            
-            if (targetElement) {
-                const rect = targetElement.getBoundingClientRect();
-                // Only scroll if element is below the visible area (with 50px margin)
-                if (rect.bottom > window.innerHeight - 50) {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            }
-        }, 150);
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 200);
     }
 
     // Show input based on type
@@ -1596,19 +1588,19 @@ O link da reunião será enviado por email e WhatsApp.`);
                 <div style="background: var(--bg-card); border-radius: 12px; padding: 12px; text-align: left;">
                     <h4 style="font-size: 0.875rem; margin-bottom: 8px; color: var(--text-light);">Próximos passos</h4>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <span style="color: var(--success); font-size: 0.875rem;">✓</span>
+                        <span style="font-size: 0.875rem; width: 20px; text-align: center;">✅</span>
                         <span style="font-size: 0.8125rem; color: var(--text-gray);">Reunião confirmada</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <span style="font-size: 0.875rem;">📧</span>
+                        <span style="font-size: 0.875rem; width: 20px; text-align: center;">📧</span>
                         <span style="font-size: 0.8125rem; color: var(--text-gray);">Link por email</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <span style="font-size: 0.875rem;">📱</span>
+                        <span style="font-size: 0.875rem; width: 20px; text-align: center;">📱</span>
                         <span style="font-size: 0.8125rem; color: var(--text-gray);">Confirmação WhatsApp</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 0.875rem;">💡</span>
+                        <span style="font-size: 0.875rem; width: 20px; text-align: center;">💡</span>
                         <span style="font-size: 0.8125rem; color: var(--text-gray);">Prepare seus desafios</span>
                     </div>
                 </div>
