@@ -1,20 +1,42 @@
+# Build stage
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source files
+COPY . .
+
+# Build args for environment variables (passed at build time)
+ARG VITE_OPENAI_API_KEY
+ARG VITE_OPENAI_MODEL
+ARG VITE_API_ENDPOINT
+ARG VITE_CLIENTE_ID
+
+# Set environment variables for build
+ENV VITE_OPENAI_API_KEY=$VITE_OPENAI_API_KEY
+ENV VITE_OPENAI_MODEL=$VITE_OPENAI_MODEL
+ENV VITE_API_ENDPOINT=$VITE_API_ENDPOINT
+ENV VITE_CLIENTE_ID=$VITE_CLIENTE_ID
+
+# Build the app
+RUN npm run build
+
+# Production stage
 FROM nginx:alpine
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy static files to nginx html directory
-COPY . /usr/share/nginx/html
-
-# Remove config files from the served files
-RUN rm -f /usr/share/nginx/html/Dockerfile /usr/share/nginx/html/nginx.conf /usr/share/nginx/html/entrypoint.sh
-
-# Copy entrypoint script and fix line endings
-COPY entrypoint.sh /docker-entrypoint.sh
-RUN sed -i 's/\r$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
+# Copy built files from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
 
-# Start with entrypoint that generates config.js
-CMD ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
