@@ -8,12 +8,3 @@ export const CONFIG = {
     API_ENDPOINT: ENV.API_ENDPOINT || import.meta.env.VITE_API_ENDPOINT || '',
     CLIENTE_ID: ENV.CLIENTE_ID || import.meta.env.VITE_CLIENTE_ID || ''
 };
-
-// Debug: log config status (without exposing keys)
-console.log('=== Environment Variables Check ===');
-console.log('window.ENV:', window.ENV);
-console.log('OPENAI_API_KEY:', CONFIG.OPENAI_API_KEY ? 'SET' : 'NOT SET');
-console.log('OPENAI_MODEL:', CONFIG.OPENAI_MODEL);
-console.log('API_ENDPOINT:', CONFIG.API_ENDPOINT || 'NOT SET');
-console.log('CLIENTE_ID:', CONFIG.CLIENTE_ID || 'NOT SET');
-console.log('===================================');
