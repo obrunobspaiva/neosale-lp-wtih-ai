@@ -14,10 +14,20 @@ export default function ChatInput({
 
     useEffect(() => {
         setValue('');
-        if (visible && inputRef.current && (type === 'text' || type === 'email' || type === 'phone')) {
-            setTimeout(() => inputRef.current?.focus(), 100);
+    }, [type]);
+
+    useEffect(() => {
+        if (visible && (type === 'text' || type === 'email' || type === 'phone')) {
+            const focusInput = () => {
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                }
+            };
+            focusInput();
+            setTimeout(focusInput, 100);
+            setTimeout(focusInput, 300);
         }
-    }, [type, visible]);
+    }, [visible, type]);
 
     const handleInputChange = (e) => {
         let newValue = e.target.value;
