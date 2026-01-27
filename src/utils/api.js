@@ -2,18 +2,28 @@ import { CONFIG } from '../config';
 import { convertColaboradoresToNumber } from './constants';
 
 // Register lead early with telefone
+// First tries GET to check if lead exists, only POSTs if not found
 export async function registerEarlyLead(telefone) {
     const phoneClean = telefone.replace(/\D/g, '');
     const phoneFormatted = phoneClean.startsWith('55') ? phoneClean : '55' + phoneClean;
 
-    const payload = {
-        nome: '',
-        telefone: phoneFormatted,
-        origem: 'neosale-lp-ai',
-        qualificacao: 'Novo'
-    };
-
     try {
+        // First, try to fetch existing lead by phone
+        const existingLead = await fetchLeadByPhone(phoneFormatted);
+        
+        if (existingLead) {
+            // Lead already exists, return it
+            return { exists: true, lead: existingLead, phoneFormatted };
+        }
+
+        // Lead not found, create new one via POST
+        const payload = {
+            nome: '',
+            telefone: phoneFormatted,
+            origem: 'neosale-lp-ai',
+            qualificacao: 'Novo'
+        };
+
         const response = await fetch(CONFIG.API_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -25,15 +35,12 @@ export async function registerEarlyLead(telefone) {
 
         const data = await response.json();
 
-        if (response.status === 409) {
-            // Lead already exists
-            const existingLead = await fetchLeadByPhone(phoneFormatted);
-            return { exists: true, lead: existingLead, phoneFormatted };
-        } else if (response.ok && data.success !== false) {
+        if (response.ok && data.success !== false) {
             const leadId = data.id || data.lead_id || data.data?.id || null;
             const leadData = await fetchLeadByPhone(phoneFormatted);
             return { exists: false, leadId, lead: leadData, phoneFormatted };
         }
+        
         return { exists: false, leadId: null, lead: null, phoneFormatted };
     } catch (error) {
         console.error('Erro ao registrar lead inicial:', error);
