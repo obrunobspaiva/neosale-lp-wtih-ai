@@ -733,7 +733,7 @@ Esses dados estão corretos?`;
         const payload = {
             nome: nome,
             telefone: phoneFormatted,
-            origem: 'neosale-lp-ai',
+            origem: 'neosale-lp-maya',
             qualificacao: 'Novo'
         };
 
@@ -1512,7 +1512,7 @@ Temos apenas três vagas para diagnósticos personalizados esta semana - onde va
                 horario: horario_agendamento,
                 data_hora_completa: `${data_agendamento}T${horario_agendamento}:00`
             },
-            origem: 'neosale-lp-ai',
+            origem: 'neosale-lp-maya',
             timestamp: new Date().toISOString()
         };
 

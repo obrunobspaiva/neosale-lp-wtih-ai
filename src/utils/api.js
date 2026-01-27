@@ -20,7 +20,7 @@ export async function registerEarlyLead(telefone) {
         const payload = {
             nome: '',
             telefone: phoneFormatted,
-            origem: 'neosale-lp-ai',
+            origem: 'neosale-lp-maya',
             qualificacao: 'Novo'
         };
 
@@ -220,7 +220,7 @@ export async function sendToWebhook(leadId, data) {
             horario: horario_agendamento,
             data_hora_completa: `${data_agendamento}T${horario_agendamento}:00`
         },
-        origem: 'neosale-lp-ai',
+        origem: 'neosale-lp-maya',
         timestamp: new Date().toISOString()
     };
 
