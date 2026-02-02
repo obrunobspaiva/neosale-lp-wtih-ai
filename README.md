@@ -1,81 +1,75 @@
-# NeoSale LP React
+# 🤖 NeoSale LP Maya
 
-Landing page da NeoSale AI com chat da Maya, recriada em React + Vite.
+Landing page interativa com chat IA integrado. Vite 5 + React 18 + OpenAI.
 
-## Setup Local
+**Versão:** 1.0.0 | **Status:** Ativo | **Stack:** Vite 5 + React 18 + OpenAI API
 
-1. Copie as imagens do projeto original:
-   ```
-   # Copie maya.jpeg para src/assets/
-   # Copie icone-azul.png para public/
-   ```
+## 🚀 Início Rápido
 
-2. Crie o arquivo `.env` baseado no `.env.example`:
-   ```
-   VITE_OPENAI_API_KEY=sk-your-key
-   VITE_OPENAI_MODEL=gpt-4o-mini
-   VITE_API_ENDPOINT=https://your-api.com/leads
-   VITE_CLIENTE_ID=your-cliente-id
-   ```
+```bash
+npm install
+npm run dev
+```
 
-3. Instale as dependências:
-   ```bash
-   npm install
-   ```
+Acesse `http://localhost:5173` ou `http://localhost:3000`
 
-4. Rode o projeto:
-   ```bash
-   npm run dev
-   ```
-
-## Deploy no EasyPanel
-
-### Configuração de Build Args
-
-No EasyPanel, configure as seguintes **Build Args** (não Environment Variables):
-
-- `VITE_OPENAI_API_KEY` = sua chave OpenAI
-- `VITE_OPENAI_MODEL` = gpt-4o-mini
-- `VITE_API_ENDPOINT` = URL da sua API de leads
-- `VITE_CLIENTE_ID` = seu cliente ID
-
-**IMPORTANTE**: No Vite, as variáveis de ambiente são injetadas no build time, não em runtime. Por isso, você precisa configurar como **Build Args** no EasyPanel, não como Environment Variables.
-
-### Passos no EasyPanel
-
-1. Crie um novo serviço do tipo **App**
-2. Conecte ao repositório Git
-3. Vá em **Build** > **Build Args** e adicione as variáveis acima
-4. Deploy!
-
-## Estrutura do Projeto
+## 📁 Estrutura
 
 ```
 src/
-├── assets/          # Imagens (maya.jpeg)
-├── components/      # Componentes React
-│   ├── BotMessage.jsx
-│   ├── Calendar.jsx
-│   ├── ChatInput.jsx
-│   ├── Confirmation.jsx
-│   ├── ExistingLeadConfirmation.jsx
-│   ├── SuccessScreen.jsx
-│   ├── TypingIndicator.jsx
-│   └── UserMessage.jsx
-├── utils/           # Utilitários
-│   ├── api.js       # Chamadas à API de leads
-│   ├── constants.js # Constantes e configurações
-│   ├── helpers.js   # Funções auxiliares
-│   └── openai.js    # Integração com OpenAI
-├── App.jsx          # Componente principal
-├── config.js        # Configuração de ambiente
-├── index.css        # Estilos globais
-└── main.jsx         # Entry point
+├── App.jsx                  # Main component
+├── main.jsx                 # Entry point
+├── index.css                # Global styles
+├── components/              # Componentes reutilizáveis
+├── assets/                  # Imagens e mídia
+└── utils/                   # Helper functions
 ```
 
-## Diferenças do Projeto Original
+## 🔧 Configuração
 
-- **React + Vite** em vez de vanilla JS
-- **Variáveis de ambiente** via `import.meta.env.VITE_*`
-- **Build estático** - as variáveis são injetadas no build, não em runtime
-- **Componentes modulares** - código mais organizado e manutenível
+### `.env.local`
+
+```env
+VITE_OPENAI_API_KEY=sk-proj-seu-token
+```
+
+**Obter token:**
+1. https://platform.openai.com/api-keys
+2. Create new secret key
+3. Copie em .env.local
+
+## 🎯 Recursos
+
+- ✅ Chat IA interativo
+- ✅ Busca semântica
+- ✅ Integração OpenAI
+- ✅ Responsivo
+- ✅ Sem TypeScript (JSX puro)
+
+## 📚 Documentação
+
+- [SETUP.md](docs/SETUP.md) - Setup detalhado
+- [ENVIRONMENT.md](docs/ENVIRONMENT.md) - Variáveis
+
+## 🚢 Deployment
+
+```bash
+npm run build               # Build otimizado
+npm run preview             # Preview do build
+npm run deploy              # Docker deploy
+```
+
+## 📦 Dependências
+
+- **react:** v18
+- **vite:** v5
+- **@vitejs/plugin-react:** Fast refresh
+
+## 📝 Licença
+
+MIT
+
+---
+
+**Mantido por:** Equipe NeoSale
+**Última atualização:** Fevereiro 2026
